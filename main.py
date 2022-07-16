@@ -34,7 +34,7 @@ def connectToKeySight(VoltLim = 4, ChannelAmt = 1, CurrentLim = 10):
             KeySight.write('SENS:VOLT:NPLC 1, (@1)')
 
             if ChannelAmt == 2:
-                # This provides the same parameters for channel two.
+                # This provides the same parameters for channel Three.
                 KeySight.write('CURR:RANGE R120mA, (@3)')
                 KeySight.write('VOLT:RANGE R20V, (@3)')
 
@@ -51,8 +51,6 @@ def connectToKeySight(VoltLim = 4, ChannelAmt = 1, CurrentLim = 10):
                 KeySight.write(f'VOLT:LIM {VoltLim}, (@2)')
                 KeySight.write('SENS:CURR:NPLC 1, (@2)')
                 KeySight.write('SENS:VOLT:NPLC 1, (@2)')
-
-            KeySight.write('SENS:CURR:NPLC 1, (@3)')
         except:
             pass
 def connectToArroyo():
@@ -331,7 +329,7 @@ class theApplication(wx.App):
             self.OneDFrame.EndingTemp.Value,self.TurnOnWithVoltageLimit.Value, self.TurnOnWithCurrentLimit.Value, 2)
             thread = threading.Thread(target=OneDLoopFunction, args=_arguments)
             thread.start()
-            
+
         if selection == "Strip":
             pass
 
@@ -427,6 +425,4 @@ if __name__ == "__main__":
     app.MainLoop()
     #Exit after the app is closed!
     sys.exit()
-
-
 
