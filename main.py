@@ -7,6 +7,14 @@ import threading
 import wx
 import time
 
+# Add coherence logic
+# Add output data from the test while the program is running
+# Add HALT function
+# Add the ability to save into a unquie folder.
+# Add strip function
+
+#Get it reviewed and done before next tuesday.
+
 #Extracted from the previous dataray interface program
 def connectToKeySight(VoltLim = 4, ChannelAmt = 1, CurrentLim = 10):
     resourceManager = pyvisa.ResourceManager()
@@ -65,7 +73,7 @@ def disconnectArroyo():
         Arroyo.write('TEC:OUTPUT 0')
         del Arroyo
 
-def checkIfInBox(p0,p1,p2,p3,p4):
+def checkIfInBox(p0, p1, p2, p3, p4):
 
     x1, y1 = p1
     x2, y2 = p2
@@ -97,42 +105,33 @@ def crossproduct(p0,p1,p2, opp=False):
     
 
 
-def SweepCurr(strCur, stepCur, endCur, strCur2=None, stepCur2=None, endCur2=None, point1=("-1","-1"), point2=("-1","-1"), point3=("-1","-1"), point4=("-1","-1")):
+def SweepCurr(strCur, stepCur, endCur, strCur2=None, stepCur2=None, endCur2=None):
 
     #Start currents must be equal
-    args = (strCur, stepCur, endCur, strCur2, stepCur2, endCur2, point1, point2, point3, point4)
-    pointargs = (point1, point2, point3, point4)
-    setupPointargs = False
+    args = (strCur, stepCur, endCur, strCur2, stepCur2, endCur2)
+    
     go = True
     for item in args:
         try:
             _ = int(item)
-
-            if type(item) == tuple or type(item) == list:
-                try:
-                    for i in item:
-                        _ = int(i)
-                except:
-                    go = False
             if item == None:
                 _strCur2 = strCur
                 _stepCur2 = stepCur
                 _endCur2 = endCur
+            else:
+                _strCur2 = strCur2
+                _stepCur2 = stepCur2
+                _endCur2 = endCur2
         except:
+            theApplication.setStatus("Please enter all numerical values correctly.")
             go = False
             pass
-    for item in pointargs:
-        for i in item:
-            if i == -1:
-                _point1 = (strCur, _strCur2)
-                _point2 = (strCur, endCur)
-                _point3 = (endCur, _endCur2)
-                _point4 = (endCur, strCur)
-            if i != -1:
-                _point1 = point1
-                _point2 = point2
-                _point3 = point3
-                _point4 = point4
+    
+        _point1 = (strCur, _strCur2)
+        _point2 = (strCur, endCur)
+        _point3 = (endCur, _endCur2)
+        _point4 = (endCur, strCur)
+
     if go:
         CurrentCH1 = []
         VoltCH1 = []
@@ -179,10 +178,40 @@ def setTemp(Temp):
         if IsThisTolerable <= Tolerance:
             TempStable = True
 
+def OneDimensionalSweep(strCur,stepCur,endCur):
+    args = (strCur, stepCur, endCur)
+    
+    try:
+        for item in args:
+            _ = int(item)
+    except:
+        theApplication.setStatus("Please enter all numerical values correctly.")
+        args = None
+
+    if endCur-strCur >= 0:
+        theApplication.setStatus("Please set the end Current less that the Start Current")
+        args = None
+    
+    if args:
+        CurrentCH1 = []
+        VoltCH1 = []
+        CurrentCH3 = []
+        
+        for iter in range(0,(endCur-strCur)/stepCur):
+            SetCurrentTo = (strCur + (iter * stepCur))    
+            KeySight.write(f'CURR {SetCurrentTo/1000}, (@1)')
+
+            CurrentCH1.append(SetCurrentTo)
+            VoltCH1.append(KeySight.query('MEAS:VOLT? (1@)')) 
+            CurrentCH3.append(KeySight.query("MEAS:CURR? (@3)"))
+            time.sleep(.1)
+        else:
+            return list(zip(CurrentCH1, VoltCH1, CurrentCH3))
 
 
-def BoxLoopFunction(strCur, stepCur, endCur, strTemp, stepTemp, endTemp):
-    args = (strCur, stepCur, endCur, strTemp, stepTemp, endTemp)
+
+def BoxLoopFunction(strCur, stepCur, endCur, strTemp, stepTemp, endTemp, VoltLim, CurrLim, ChannelAmt):
+    args = (strCur, stepCur, endCur, strTemp, stepTemp, endTemp, VoltLim, CurrLim, ChannelAmt)
     try:
         for item in args:
             _ = int(item)
@@ -190,16 +219,43 @@ def BoxLoopFunction(strCur, stepCur, endCur, strTemp, stepTemp, endTemp):
         args = None
     
     if args:
+        _strCur, _stepCur, _endCur, _strTemp, _stepTemp, _endTemp, _VoltLim, _CurrLim, _ChannelAmt = int(strCur), int(stepCur), int(endCur), int(strTemp), int(stepTemp), int(endTemp), int(VoltLim), int(CurrLim), int(ChannelAmt)
+        connectToKeySight(_VoltLim, _CurrLim, _ChannelAmt)
+        connectToArroyo()
         DataFromSweep = []
         AllDataCollected = []
-        for iter in range(0, (endTemp-strTemp)/stepTemp):
-            setTemp(strTemp+(iter*stepTemp))
-            strTemp+(iter*stepTemp)
-            DataFromSweep = SweepCurr(strCur, stepCur, endCur)
-            AllDataCollected.extend(zip(SweepCurr, strTemp+(iter*stepTemp)))
+        for iter in range(0, (_endTemp-_strTemp)/_stepTemp):
+            setTemp(_strTemp+(iter*_stepTemp))
+            DataFromSweep = SweepCurr(_strCur, _stepCur, _endCur)
+            AllDataCollected.extend(zip(SweepCurr, _strTemp+(iter*_stepTemp)))
         else:
             excelDataFrame = pandas.DataFrame(AllDataCollected, index=None, columns=["Current CH1 (mA)", "Voltage CH1", 
             "Current CH2", "Voltage CH2", "Current CH3 (mA)", "Temperature (F)"])
+            excelDataFrame.to_excel("output.xlsx")
+            disconnectKeySight()
+            disconnectArroyo()
+
+def OneDLoopFunction(strCur, stepCur, endCur, strTemp, stepTemp, endTemp, VoltLim, CurrLim, ChannelAmt):
+    args = (strCur, stepCur, endCur, strTemp, stepTemp, endTemp, VoltLim, CurrLim, ChannelAmt)
+    try:
+        for item in args:
+            _ = int(item)
+    except:
+        args = None
+
+    _strCur, _stepCur, _endCur, _strTemp, _stepTemp, _endTemp, _VoltLim, _CurrLim, _ChannelAmt = int(strCur), int(stepCur), int(endCur), int(strTemp), int(stepTemp), int(endTemp), int(VoltLim), int(CurrLim), int(ChannelAmount)
+    if args:
+        connectToKeySight(_VoltLim, _CurrLim, _ChannelAmt)
+        connectToArroyo()
+        DataFromSweep = []
+        AllDataCollected = []
+        for iter in range(0, (_endTemp-_strTemp)/_stepTemp):
+            setTemp(_strTemp+(iter*_stepTemp))
+            DataFromSweep = OneDimensionalSweep(_strCur, _stepCur, _endCur)
+            AllDataCollected.extend(zip(SweepCurr, _strTemp+(iter*_stepTemp)))
+        else:
+            excelDataFrame = pandas.DataFrame(AllDataCollected, index=None, columns=["Current CH1 (mA)", "Voltage CH1", 
+            "Current CH3 (mA)", "Temperature (F)"])
             excelDataFrame.to_excel("output.xlsx")
             disconnectKeySight()
             disconnectArroyo()
@@ -217,7 +273,7 @@ class theApplication(wx.App):
 
         '''MAIN FRAME'''
         # Test Start Button
-        self.TestBeginButton = wx.Button(self.pMain, label="Begin Test", pos=(160, 35))
+        self.TestBeginButton = wx.Button(self.pMain, label="Begin Test", pos=(160, 50))
 
         # Box Mode Button
         self.BoxModeButton = wx.Button(self.pMain, label="Box Mode", pos=(10,10))
@@ -231,25 +287,53 @@ class theApplication(wx.App):
         self.OneDModeButton = wx.Button(self.pMain, label="1D Mode", pos=(310,10))
         self.OneDModeButton.Bind(wx.EVT_BUTTON, self.showOneDMode)
 
+        # Connection Controls
+        self.TurnOnWithVoltageLimitHeader = wx.StaticText(self.pMain, label="Setup the Keysight's Volt Limit on Both Channels to: ____ (V) ", pos=(300, 100))
+        self.TurnOnWithVoltageLimit = wx.TextCtrl(self.pMain, pos=(350,125), size=(100,-1))
+
+        self.TurnOnWithCurrentLimitHeader = wx.StaticText(self.pMain, label="Setup the Keysight's Current Limit on the Third Channel to: ___ (mA) ", pos=(300, 150))
+        self.TurnOnWithCurrentLimit = wx.TextCtrl(self.pMain, pos=(350, 175), size=(100,-1))
+        #Status Display
+        self.Status = wx.StaticText(self.pMain, label="Status: Nothing to report.", pos=(120, 80))
+
     def showBoxMode(self, e):
+        ChannelAmount = 3
+        self.selection = "Box"
         self.BoxWindow = BoxFrame(title="Python Interface to Keysight (Box Mode)")
         self.BoxWindow.Show()
 
     def showStripMode(self, e):
+        ChannelAmount = 3
+        self.selection = "Strip"
         self.StripWindow = StripFrame(title="Python Interface to Keysight (Strip Mode)")
         self.StripWindow.Show()
     def showOneDMode(self, e):
+        self.selection = "1D"
+        ChannelAmount = 2
         self.OneDWindow = OneDFrame(title="Python Interface to Keysight (1D Mode)")
         self.OneDWindow.Show()
+    
+    def setStatus(self, status="Nothing to report."):
+        self.Status.Label = f"Status: {status}"
 
     def wrapperFunction(self, e, selection):
         if selection == "Box":
             _arguments = (self.BoxWindow.StartingDriveCurrent.Value, self.BoxWindow.DriveCurrentStep.Value, 
             self.BoxWindow.DriveCurrentEnd.Value, self.BoxWindow.StartingTemp, self.BoxWindow.TempStep.Value, 
-            self.BoxWindow.EndingTemp.Value)
+            self.BoxWindow.EndingTemp.Value, self.TurnOnWithVoltageLimit.Value, self.TurnOnWithCurrentLimit.Value, 3)
             thread = threading.Thread(target=BoxLoopFunction, args=_arguments)
             thread.start()
-    # If selection == ""
+
+        if selection == "1D":
+
+            _arguments = (self.OneDFrame.StartingDriveCurrent.Value, self.OneDFrame.DriveCurrentStep.Value, 
+            self.OneDFrame.DriveCurrentEnd.Value, self.OneDFrame.StartingTemp, self.OneDFrame.TempStep.Value, 
+            self.OneDFrame.EndingTemp.Value,self.TurnOnWithVoltageLimit.Value, self.TurnOnWithCurrentLimit.Value, 2)
+            thread = threading.Thread(target=OneDLoopFunction, args=_arguments)
+            thread.start()
+            
+        if selection == "Strip":
+            pass
 
 
 class BoxFrame(wx.Frame):
@@ -299,6 +383,36 @@ class OneDFrame(wx.Frame):
 
         self.p1D = wx.Panel(self, wx.ID_ANY)
 
+         # Current setting on channel one during test.
+        self.StartingDriveCurrentHeader = wx.StaticText(self.p1D, label = "Starting Current CH1 (mA)", pos=(10,10))
+        self.StartingDriveCurrent = wx.TextCtrl(self.p1D, pos=(10,35), size=(100,-1))
+        
+        self.DriveCurrentStepHeader = wx.StaticText(self.p1D, label = "Current Step CH1 ", pos=(10,60))
+        self.DriveCurrentStep = wx.TextCtrl(self.p1D, pos=(10,85), size=(100,-1))
+
+        self.DriveCurrentEndHeader = wx.StaticText(self.p1D, label = "Ending Current CH1 (mA)", pos=(10,110))
+        self.DriveCurrentEnd = wx.TextCtrl(self.p1D, pos=(10,135), size=(100,-1))
+
+        # # Current setting on channel two during test.
+        # self.StartingDriveCurrentHeader2 = wx.StaticText(self.p1D, label = "Starting Current CH2 (mA)", pos=(160,10))
+        # self.StartingDriveCurrent2 = wx.TextCtrl(self.p1D, pos=(160,35), size=(100,-1))
+        
+        # self.DriveCurrentStepHeader2 = wx.StaticText(self.p1D, label = "Current Step CH2 ", pos=(160,60))
+        # self.DriveCurrentStep2 = wx.TextCtrl(self.p1D, pos=(160,85), size=(100,-1))
+
+        # self.DriveCurrentEndHeader2 = wx.StaticText(self.p1D, label = "Ending Current CH2 (mA)", pos=(160,110))
+        # self.DriveCurrentEnd2 = wx.TextCtrl(self.p1D, pos=(160,135), size=(100,-1))
+
+        # Tempurature Setting
+        self.StartingTempHeader = wx.StaticText(self.p1D, label = "Starting Temp (F)", pos=(160,10))
+        self.StartingTemp = wx.TextCtrl(self.p1D, pos=(160,35), size=(100,-1))
+        
+        self.TempStepHeader = wx.StaticText(self.p1D, label = "Temp Step", pos=(160,60))
+        self.TempStep = wx.TextCtrl(self.p1D, pos=(160,85), size=(100,-1))
+
+        self.EndingTempHeader = wx.StaticText(self.p1D, label = "Ending Temp (F)", pos=(160,110))
+        self.EndingTemp = wx.TextCtrl(self.p1D, pos=(160,135), size=(100,-1))
+
 class DataFrame(wx.Frame):
     """
     Class used for creating frames other than the main one
@@ -309,10 +423,10 @@ class DataFrame(wx.Frame):
 
 
 if __name__ == "__main__":
-    print(checkIfInBox((2,2), (1,1), (.5,3), (4,4), (4,2)))
     app = theApplication()
     app.MainLoop()
     #Exit after the app is closed!
     sys.exit()
+
 
 
