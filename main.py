@@ -144,7 +144,7 @@ def SweepCurr(strCur, stepCur, endCur, strCur2=None, stepCur2=None, endCur2=None
             time.sleep(.1)
             if checkIfInBox((SetCurrentTo,SetCurrentTo2),_point1,_point2,_point3,_point4):
                     CurrentCH1.append(SetCurrentTo)
-                    VoltCH1.append(KeySight.query('MEAS:VOLT? (1@)'))  
+                    VoltCH1.append(KeySight.query('MEAS:VOLT? (@1)'))  
             for iteration in range(0, (_endCur2-_strCur2)/_stepCur2):
                 SetCurrentTo2 = (_strCur2 + (iteration * _stepCur2))
                 KeySight.write(f'CURR {SetCurrentTo/1000}, (@2)')
@@ -154,7 +154,7 @@ def SweepCurr(strCur, stepCur, endCur, strCur2=None, stepCur2=None, endCur2=None
                     time.sleep(.1)
                     CurrentCH2.append(SetCurrentTo)
                     time.sleep(.1)
-                    VoltCH2.append(KeySight.query('MEAS:VOLT? (2@)'))
+                    VoltCH2.append(KeySight.query('MEAS:VOLT? (@2)'))
         else:
             AllData = zip(CurrentCH1, VoltCH1, CurrentCH2, VoltCH2, CurrentCH3)
             return list(AllData)
@@ -200,7 +200,7 @@ def OneDimensionalSweep(strCur,stepCur,endCur):
             KeySight.write(f'CURR {SetCurrentTo/1000}, (@1)')
 
             CurrentCH1.append(SetCurrentTo)
-            VoltCH1.append(KeySight.query('MEAS:VOLT? (1@)')) 
+            VoltCH1.append(KeySight.query('MEAS:VOLT? (@1)')) 
             CurrentCH3.append(KeySight.query("MEAS:CURR? (@3)"))
             time.sleep(.1)
         else:
