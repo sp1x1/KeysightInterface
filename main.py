@@ -375,6 +375,36 @@ class StripFrame(wx.Frame):
 
         self.pStrip = wx.Panel(self, wx.ID_ANY)
 
+         # Current setting on channel one during test.
+        self.StartingDriveCurrentHeader = wx.StaticText(self.pStrip, label = "Starting Current CH1 (mA)", pos=(10,10))
+        self.StartingDriveCurrent = wx.TextCtrl(self.pStrip, pos=(10,35), size=(100,-1))
+        
+        self.DriveCurrentStepHeader = wx.StaticText(self.pStrip, label = "Current Step CH1 ", pos=(10,60))
+        self.DriveCurrentStep = wx.TextCtrl(self.pStrip, pos=(10,85), size=(100,-1))
+
+        self.DriveCurrentEndHeader = wx.StaticText(self.pStrip, label = "Ending Current CH1 (mA)", pos=(10,110))
+        self.DriveCurrentEnd = wx.TextCtrl(self.pStrip, pos=(10,135), size=(100,-1))
+
+        # Current setting on channel two during test.
+        self.StartingDriveCurrentHeader2 = wx.StaticText(self.pStrip, label = "Starting Current CH2 (mA)", pos=(160,10))
+        self.StartingDriveCurrent2 = wx.TextCtrl(self.pStrip, pos=(160,35), size=(100,-1))
+        
+        self.DriveCurrentStepHeader2 = wx.StaticText(self.pStrip, label = "Current Step CH2 ", pos=(160,60))
+        self.DriveCurrentStep2 = wx.TextCtrl(self.pStrip, pos=(160,85), size=(100,-1))
+
+        self.DriveCurrentEndHeader2 = wx.StaticText(self.pStrip, label = "Ending Current CH2 (mA)", pos=(160,110))
+        self.DriveCurrentEnd2 = wx.TextCtrl(self.pStrip, pos=(160,135), size=(100,-1))
+
+        # Tempurature Setting
+        self.StartingTempHeader = wx.StaticText(self.pStrip, label = "Starting Temp (F)", pos=(310,10))
+        self.StartingTemp = wx.TextCtrl(self.pStrip, pos=(310,35), size=(100,-1))
+        
+        self.TempStepHeader = wx.StaticText(self.pStrip, label = "Temp Step", pos=(310, 60))
+        self.TempStep = wx.TextCtrl(self.pStrip, pos=(310,85), size=(100,-1))
+
+        self.EndingTempHeader = wx.StaticText(self.pStrip, label = "Ending Temp (F)", pos=(310,110))
+        self.EndingTemp = wx.TextCtrl(self.pStrip, pos=(310,135), size=(100,-1))
+
 class OneDFrame(wx.Frame):
     def __init__(self, title, parent=None):
         wx.Frame.__init__(self, parent=parent, title=title, id=wx.ID_ANY, size=(500,300))
