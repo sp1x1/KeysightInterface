@@ -241,7 +241,7 @@ def OneDLoopFunction(strCur, stepCur, endCur, strTemp, stepTemp, endTemp, VoltLi
     except:
         args = None
 
-    _strCur, _stepCur, _endCur, _strTemp, _stepTemp, _endTemp, _VoltLim, _CurrLim, _ChannelAmt = int(strCur), int(stepCur), int(endCur), int(strTemp), int(stepTemp), int(endTemp), int(VoltLim), int(CurrLim), int(ChannelAmount)
+    _strCur, _stepCur, _endCur, _strTemp, _stepTemp, _endTemp, _VoltLim, _CurrLim, _ChannelAmt = int(strCur), int(stepCur), int(endCur), int(strTemp), int(stepTemp), int(endTemp), int(VoltLim), int(CurrLim), int(ChannelAmt)
     if args:
         connectToKeySight(_VoltLim, _CurrLim, _ChannelAmt)
         connectToArroyo()
