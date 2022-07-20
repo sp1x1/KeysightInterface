@@ -144,7 +144,7 @@ def SweepCurr(strCur, stepCur, endCur, strCur2=None, stepCur2=None, endCur2=None
             time.sleep(.1)
             if checkIfInBox((SetCurrentTo,SetCurrentTo2),_point1,_point2,_point3,_point4):
                     CurrentCH1.append(SetCurrentTo)
-                    VoltCH1.append(KeySight.query('MEAS:VOLT? (1@)'))  
+                    VoltCH1.append(KeySight.query('MEAS:VOLT? (@1)'))  
             for iteration in range(0, (_endCur2-_strCur2)/_stepCur2):
                 SetCurrentTo2 = (_strCur2 + (iteration * _stepCur2))
                 KeySight.write(f'CURR {SetCurrentTo/1000}, (@2)')
@@ -154,7 +154,7 @@ def SweepCurr(strCur, stepCur, endCur, strCur2=None, stepCur2=None, endCur2=None
                     time.sleep(.1)
                     CurrentCH2.append(SetCurrentTo)
                     time.sleep(.1)
-                    VoltCH2.append(KeySight.query('MEAS:VOLT? (2@)'))
+                    VoltCH2.append(KeySight.query('MEAS:VOLT? (@2)'))
         else:
             AllData = zip(CurrentCH1, VoltCH1, CurrentCH2, VoltCH2, CurrentCH3)
             return list(AllData)
@@ -200,7 +200,7 @@ def OneDimensionalSweep(strCur,stepCur,endCur):
             KeySight.write(f'CURR {SetCurrentTo/1000}, (@1)')
 
             CurrentCH1.append(SetCurrentTo)
-            VoltCH1.append(KeySight.query('MEAS:VOLT? (1@)')) 
+            VoltCH1.append(KeySight.query('MEAS:VOLT? (@1)')) 
             CurrentCH3.append(KeySight.query("MEAS:CURR? (@3)"))
             time.sleep(.1)
         else:
@@ -374,6 +374,36 @@ class StripFrame(wx.Frame):
         wx.Frame.__init__(self, parent=parent, title=title, id=wx.ID_ANY, size=(500,300))
 
         self.pStrip = wx.Panel(self, wx.ID_ANY)
+
+         # Current setting on channel one during test.
+        self.StartingDriveCurrentHeader = wx.StaticText(self.pStrip, label = "Starting Current CH1 (mA)", pos=(10,10))
+        self.StartingDriveCurrent = wx.TextCtrl(self.pStrip, pos=(10,35), size=(100,-1))
+        
+        self.DriveCurrentStepHeader = wx.StaticText(self.pStrip, label = "Current Step CH1 ", pos=(10,60))
+        self.DriveCurrentStep = wx.TextCtrl(self.pStrip, pos=(10,85), size=(100,-1))
+
+        self.DriveCurrentEndHeader = wx.StaticText(self.pStrip, label = "Ending Current CH1 (mA)", pos=(10,110))
+        self.DriveCurrentEnd = wx.TextCtrl(self.pStrip, pos=(10,135), size=(100,-1))
+
+        # Current setting on channel two during test.
+        self.StartingDriveCurrentHeader2 = wx.StaticText(self.pStrip, label = "Starting Current CH2 (mA)", pos=(160,10))
+        self.StartingDriveCurrent2 = wx.TextCtrl(self.pStrip, pos=(160,35), size=(100,-1))
+        
+        self.DriveCurrentStepHeader2 = wx.StaticText(self.pStrip, label = "Current Step CH2 ", pos=(160,60))
+        self.DriveCurrentStep2 = wx.TextCtrl(self.pStrip, pos=(160,85), size=(100,-1))
+
+        self.DriveCurrentEndHeader2 = wx.StaticText(self.pStrip, label = "Ending Current CH2 (mA)", pos=(160,110))
+        self.DriveCurrentEnd2 = wx.TextCtrl(self.pStrip, pos=(160,135), size=(100,-1))
+
+        # Tempurature Setting
+        self.StartingTempHeader = wx.StaticText(self.pStrip, label = "Starting Temp (F)", pos=(310,10))
+        self.StartingTemp = wx.TextCtrl(self.pStrip, pos=(310,35), size=(100,-1))
+        
+        self.TempStepHeader = wx.StaticText(self.pStrip, label = "Temp Step", pos=(310, 60))
+        self.TempStep = wx.TextCtrl(self.pStrip, pos=(310,85), size=(100,-1))
+
+        self.EndingTempHeader = wx.StaticText(self.pStrip, label = "Ending Temp (F)", pos=(310,110))
+        self.EndingTemp = wx.TextCtrl(self.pStrip, pos=(310,135), size=(100,-1))
 
 class OneDFrame(wx.Frame):
     def __init__(self, title, parent=None):
