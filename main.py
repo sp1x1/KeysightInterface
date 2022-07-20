@@ -6,13 +6,35 @@ import openpyxl
 import threading
 import wx
 import time
+import os
 
 # Add coherence logic
 # Add output data from the test while the program is running
 # Add HALT function
-# Add the ability to save into a unquie folder.
-# Add strip function
+'''
+done
+Add the ability to save into a unique folder.
+'''
 
+'''
+this will not work because there are no double-backslashes in the call to os.makedirs
+
+newpath = r'C:\Program Files\arbitrary' 
+if not os.path.exists(newpath):
+    os.makedirs(newpath)
+'''
+
+'''
+put this cmd where its supposed to go pls egg man
+'''
+# this os.path.join function makes this command compatible with os other than windows
+newpath = os.path.join('C:','\Program Files', '\KeysightData')
+# checks if specified path exists
+if not os.path.exists(newpath):
+    # if not, creates the folder
+    os.makedirs(newpath)
+
+# Add strip function
 #Get it reviewed and done before next tuesday.
 
 #Extracted from the previous dataray interface program
