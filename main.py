@@ -455,4 +455,3 @@ if __name__ == "__main__":
     app.MainLoop()
     #Exit after the app is closed!
     sys.exit()
-
